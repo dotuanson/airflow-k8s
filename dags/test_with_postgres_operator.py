@@ -19,7 +19,7 @@ with DAG(
         sql="""
             create table if not exists dag_runs (
                 dt data,
-                dag_id chracter varying,
+                dag_id character varying,
                 primary key (dt, dag_id)
             )
         """
