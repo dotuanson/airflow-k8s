@@ -18,7 +18,7 @@ with DAG(
         postgres_conn_id='postgres_conn',
         sql="""
             create table if not exists dag_runs (
-                dt data,
+                dt date,
                 dag_id character varying,
                 primary key (dt, dag_id)
             )
