@@ -16,13 +16,13 @@ class AppPath:
 
 class DefaultConfig:
     DEFAULT_DAG_ARGS = {
-        "owner": "mlopsvn",
+        "owner": "Prep",
         "retries": 0,
         "retry_delay": pendulum.duration(seconds=20),
     }
 
     DEFAULT_DOCKER_OPERATOR_ARGS = {
-        "image": f"{AppConst.DOCKER_USER}/mlops_crash_course/data_pipeline:latest",
+        "image": f"nginx:latest",
         "api_version": "auto",
         "auto_remove": True,
         "mounts": [
