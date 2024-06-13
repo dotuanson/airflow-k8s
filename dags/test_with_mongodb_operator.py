@@ -1,10 +1,16 @@
+import sys
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(BASE_DIR)
+
 import pendulum
 import logging
 from airflow import DAG
 from airflow.providers.mongo.hooks.mongo import MongoHook
 from airflow.operators.python import PythonOperator
 
-from utils.config import *
+from ..utils.config import *
 
 # Define default arguments for the DAG
 default_args = {
