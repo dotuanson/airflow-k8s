@@ -1,17 +1,4 @@
-from pathlib import Path
 import pendulum
-from airflow.models import Variable
-from docker.types import Mount
-
-
-class AppConst:
-    DOCKER_USER = Variable.get("DOCKER_USER", "mlopsvn")
-
-
-# class AppPath:
-#     MLOPS_CRASH_COURSE_CODE_DIR = Path(Variable.get("MLOPS_CRASH_COURSE_CODE_DIR"))
-#     DATA_PIPELINE_DIR = MLOPS_CRASH_COURSE_CODE_DIR / "data_pipeline"
-#     FEATURE_REPO = DATA_PIPELINE_DIR / "feature_repo"
 
 
 class DefaultConfig:

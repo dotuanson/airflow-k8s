@@ -3,15 +3,11 @@ import pendulum
 from airflow.models.dag import DAG
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
-default_args = {
-    'owner': "sondt",
-    'retries': 5,
-    'retry_delay': pendulum.duration(minutes=5),
-}
+from utils import *
 
 with DAG(
     dag_id="test_dag_postgres_operator_v01",
-    default_args=default_args,
+    default_args=DefaultConfig.DEFAULT_DAG_ARGS,
     start_date=pendulum.datetime(2024, 6, 1, tz="UTC"),
     schedule_interval='@once',
 ) as dag:
