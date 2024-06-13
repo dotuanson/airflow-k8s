@@ -10,7 +10,7 @@ from airflow import DAG
 from airflow.providers.mongo.hooks.mongo import MongoHook
 from airflow.operators.python import PythonOperator
 
-from ..utils.config import *
+from utils.config import *
 
 # Define default arguments for the DAG
 default_args = {
