@@ -10,6 +10,8 @@ with DAG(
     default_args=DefaultConfig.DEFAULT_DAG_ARGS,
     start_date=pendulum.datetime(2024, 6, 1, tz="UTC"),
     schedule_interval='@once',
+    catchup=False,
+    tags=["data_pipeline"],
 ) as dag:
     task1 = PostgresOperator(
         task_id='create_postgres_table',
