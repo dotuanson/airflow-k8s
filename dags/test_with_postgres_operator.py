@@ -12,8 +12,8 @@ default_args = {
 with DAG(
     dag_id="test_dag_postgres_operator_v01",
     default_args=default_args,
-    start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
-    schedule_interval='0 0 * * *',
+    start_date=pendulum.datetime(2024, 6, 1, tz="UTC"),
+    schedule_interval='@once',
 ) as dag:
     task1 = PostgresOperator(
         task_id='create_postgres_table',
