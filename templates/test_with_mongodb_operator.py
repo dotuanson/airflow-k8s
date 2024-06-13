@@ -3,7 +3,7 @@ import pendulum
 from airflow.models.dag import DAG
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
-from utils import *
+from utils.config import *
 
 with DAG(
     dag_id="test_dag_postgres_operator_v01",
@@ -15,7 +15,7 @@ with DAG(
 ) as dag:
     task1 = PostgresOperator(
         task_id='create_postgres_table',
-        postgres_conn_id='postgres_conn',
+        postgres_conn_id='postgres_prod',
         sql="""
             create table if not exists dag_runs (
                 dt date,

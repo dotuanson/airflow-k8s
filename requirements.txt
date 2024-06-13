@@ -1,3 +1,5 @@
 apache-airflow
 apache-airflow-providers-docker
+apache-airflow-providers-postgres
+apache-airflow-providers-mongo
 pendulum
