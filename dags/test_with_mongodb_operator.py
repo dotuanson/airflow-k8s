@@ -19,75 +19,44 @@ def load_mongo_data(**kwargs):
     with mongo_hook.get_conn() as client:
         db = client['conventional_gec_logs']
         collection = db['log_data']
-
-        # Fetch data from MongoDB
         data = list(collection.find().limit(10))
-
-        # Push data to XCom
         kwargs['ti'].xcom_push(key='raw_data', value=data)
 
 
 def transform_mongo_data(**kwargs):
-    # Pull data from XCom
-    raw_data = kwargs['ti'].xcom_pull(key='raw_data', task_ids='load_mongo_data')
-
     def transform_conversation_data(data):
-        """
-        Transform 'conversation' data from MongoDB documents.
-
-        Parameters:
-            data (list): List of MongoDB documents (dictionaries).
-
-        Returns:
-            list: Transformed data.
-        """
         transformed_data_output = []
-
-        for document in data:
-            if 'conversation' in document:
-                conversation = document['conversation']
-                # Example transformation logic
-                transformed_conversation = {
-                    'id': conversation.get('id'),
-                    'message': conversation.get('message', '').upper(),  # Example transformation
-                    'timestamp': conversation.get('timestamp')
-                }
-                transformed_data_output.append(transformed_conversation)
-
+        for doc in data:
+            if 'conversation' in doc:
+                for conversation in doc['conversation']:
+                    transformed_conversation = {
+                        'orig_text': conversation.get('orig_text', ''),
+                        'corr_text': conversation.get('corr_text')
+                    }
+                    transformed_data_output.append(transformed_conversation)
         return transformed_data_output
 
-    # Transform data
+    raw_data = kwargs['ti'].xcom_pull(key='raw_data', task_ids='load_mongo_data')
     transformed_data = transform_conversation_data(raw_data)
 
-    # Log or process the transformed data
     for document in transformed_data:
         logging.info(document)
 
 
+def load_sheet_data(**kwargs): ...
+
+
 with DAG(
-        dag_id="mongo_load_data_with_context_manager_v02",
+        dag_id="grammaraide_conversation_gec_data_logs_mongo_v01",
         default_args=DefaultConfig.DEFAULT_DAG_ARGS,
         start_date=pendulum.datetime(2024, 6, 1, tz="UTC"),
         schedule_interval='@once',  # Run on demand
         catchup=False,
-        tags=["data_pipeline"],
+        tags=["grammaraide", "data pipeline"],
 ) as dag:
-    def load_mongo_data_with_context(**kwargs):
-        mongo_hook = MongoHook(conn_id='mongodb_prod')
-
-        with mongo_hook.get_conn() as client:
-            db = client['conventional_gec_logs']
-            collection = db['log_data']
-
-            data = collection.find().limit(10)
-
-            for document in data:
-                logging.info(document)
-
-
-    load_data_task = PythonOperator(
-        task_id='load_mongo_data_with_context',
-        python_callable=load_mongo_data_with_context,
+    load_mongo_task = PythonOperator(
+        task_id='load_mongo_data',
+        python_callable=load_mongo_data,
     )
 
     transform_task = PythonOperator(
@@ -96,4 +65,4 @@ with DAG(
         provide_context=True,
     )
 
-    load_data_task >> transform_task
+    load_mongo_task >> transform_task
