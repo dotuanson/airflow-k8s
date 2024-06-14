@@ -19,7 +19,9 @@ def load_mongo_data(**kwargs):
     with mongo_hook.get_conn() as client:
         db = client['conventional_gec_logs']
         collection = db['log_data']
-        data = list(collection.find().limit(10))
+        data = collection.find().limit(10)
+        for doc in data:
+            doc['_id'] = str(doc['_id'])
         kwargs['ti'].xcom_push(key='raw_data', value=data)
 
 
