@@ -34,7 +34,8 @@ def transform_mongo_data(**kwargs):
                     if conversation.get('role') == "user":
                         transformed_conversation = {
                             'orig_text': conversation.get('orig_text'),
-                            'corr_text': conversation.get('corr_text')
+                            'corr_text': conversation.get('corr_text'),
+                            '_id': conversation.get('_id')
                         }
                         transformed_data_output.append(transformed_conversation)
         return transformed_data_output
