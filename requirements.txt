@@ -1,5 +1,6 @@
 apache-airflow
-apache-airflow-providers-docker
-apache-airflow-providers-postgres
-apache-airflow-providers-mongo
+apache-airflow[docker]
+apache-airflow[postgres]
+apache-airflow[mongo]
+apache-airflow[google]
 pendulum

@@ -8,12 +8,13 @@ import pendulum
 import logging
 from airflow import DAG
 from airflow.providers.mongo.hooks.mongo import MongoHook
+from airflow.providers.google.suite.hooks.sheets import GSheetsHook
 from airflow.operators.python import PythonOperator
 
 from utils.config import *
 
 
-def load_mongo_data(**kwargs):
+def extract_mongo_data(**kwargs):
     mongo_hook = MongoHook(conn_id='mongodb_prod')
 
     with mongo_hook.get_conn() as client:
@@ -40,14 +41,27 @@ def transform_mongo_data(**kwargs):
                         transformed_data_output.append(transformed_conversation)
         return transformed_data_output
 
-    raw_data = kwargs['ti'].xcom_pull(key='raw_data', task_ids='load_mongo_data')
+    raw_data = kwargs['ti'].xcom_pull(key='raw_data', task_ids='extract_mongo_data')
     transformed_data = transform_conversation_data(raw_data)
-
+    kwargs['ti'].xcom_push(key='transformed_data', value=transformed_data)
     for document in transformed_data:
         logging.info(document)
 
 
-def load_sheet_data(**kwargs): ...
+def load_sheet_data(**kwargs):
+    transformed_data = kwargs['ti'].xcom_pull(key='transformed_data', task_ids='transform_mongo_data')
+    sheet_data = [[data["orig_text"], data["corr_text"]] for data in transformed_data]
+    gsheet_hook = GSheetsHook(
+        gcp_conn_id="google_cloud_sondo",
+    )
+    spreadsheet_id = '1FqP2iL_5yLXoTNUG4EOXJRypfu8ola_z6PaQabwsSaE'
+    range_name = 'Sheet1!A1:A'
+    gsheet_hook.append_values(
+        spreadsheet_id=spreadsheet_id,
+        range_=range_name,
+        values=sheet_data,
+        value_input_option='RAW'
+    )
 
 
 with DAG(
@@ -58,15 +72,19 @@ with DAG(
         catchup=False,
         tags=["grammaraide", "data pipeline"],
 ) as dag:
-    load_mongo_task = PythonOperator(
-        task_id='load_mongo_data',
-        python_callable=load_mongo_data,
+    extract_task = PythonOperator(
+        task_id='extract_mongo_data',
+        python_callable=extract_mongo_data,
     )
 
     transform_task = PythonOperator(
         task_id='transform_mongo_data',
         python_callable=transform_mongo_data,
-        provide_context=True,
     )
 
-    load_mongo_task >> transform_task
+    load_task = PythonOperator(
+        task_id='load_sheet_data',
+        python_callable=load_sheet_data,
+    )
+
+    load_task >> transform_task >> load_task
