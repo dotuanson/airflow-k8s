@@ -31,11 +31,12 @@ def transform_mongo_data(**kwargs):
         for doc in data:
             if 'conversation' in doc:
                 for conversation in doc['conversation']:
-                    transformed_conversation = {
-                        'orig_text': conversation.get('orig_text', ''),
-                        'corr_text': conversation.get('corr_text')
-                    }
-                    transformed_data_output.append(transformed_conversation)
+                    if conversation.get('role') == "user":
+                        transformed_conversation = {
+                            'orig_text': conversation.get('orig_text'),
+                            'corr_text': conversation.get('corr_text')
+                        }
+                        transformed_data_output.append(transformed_conversation)
         return transformed_data_output
 
     raw_data = kwargs['ti'].xcom_pull(key='raw_data', task_ids='load_mongo_data')
