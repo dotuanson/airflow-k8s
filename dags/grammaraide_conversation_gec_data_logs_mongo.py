@@ -6,9 +6,10 @@ sys.path.append(BASE_DIR)
 
 import pendulum
 import logging
+import gspread
 from airflow import DAG
 from airflow.providers.mongo.hooks.mongo import MongoHook
-from airflow.providers.google.suite.hooks.sheets import GSheetsHook
+from airflow.providers.google.common.hooks.base_google import GoogleBaseHook
 from airflow.operators.python import PythonOperator
 
 from utils.config import *
@@ -51,17 +52,14 @@ def transform_mongo_data(**kwargs):
 def load_sheet_data(**kwargs):
     transformed_data = kwargs['ti'].xcom_pull(key='transformed_data', task_ids='transform_mongo_data')
     sheet_data = [[data["orig_text"], data["corr_text"]] for data in transformed_data]
-    gsheet_hook = GSheetsHook(
+    hook = GoogleBaseHook(
         gcp_conn_id="google_cloud_sondo",
     )
-    spreadsheet_id = '1FqP2iL_5yLXoTNUG4EOXJRypfu8ola_z6PaQabwsSaE'
-    range_name = 'Sheet1!A1:A'
-    gsheet_hook.append_values(
-        spreadsheet_id=spreadsheet_id,
-        range_=range_name,
-        values=sheet_data,
-        value_input_option='RAW'
-    )
+    credentials = hook.get_credentials()
+    google_credentials = gspread.Client(auth=credentials)
+    sheet = google_credentials.open("Gector_logs")
+    worksheet = sheet.worksheet("Sheet1")
+    worksheet.update(sheet_data)
 
 
 with DAG(
