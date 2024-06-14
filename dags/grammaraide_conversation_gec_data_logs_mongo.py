@@ -57,9 +57,10 @@ def load_sheet_data(**kwargs):
     )
     credentials = hook.get_credentials()
     google_credentials = gspread.Client(auth=credentials)
-    sheet = google_credentials.open("Gector_logs")
-    worksheet = sheet.worksheet("Sheet1")
+    sheet = google_credentials.open(title="Gector_logs", folder_id="14Bdv-RFYqjDkTXCPLxiBUqgJyOi_POnl")
+    worksheet = sheet.worksheet("Mongo")
     worksheet.update(sheet_data)
+    worksheet.append_rows(sheet_data)
 
 
 with DAG(
